@@ -1,0 +1,52 @@
+---
+- name: Get VPC
+  amazon.aws.ec2_vpc_net_info:
+    region: '{{ aws_vpc_region }}'
+    filters:
+      "tag:vpc_name": '{{ aws_vpc_name }}'
+  register: _vpc_output
+
+- name: Get VPC resources
+  when: _vpc_output.vpcs | length > 0
+  block:
+    - name: Ensure there is only one matching VPC
+      ansible.builtin.assert:
+        that:
+          - _vpc_output.vpcs | length == 1
+        fail_msg: >
+          Found more than one VPC with the same name and vpc_name tag, failing for safety
+
+    - name: Get VPC internet gateway
+      amazon.aws.ec2_vpc_igw_info:
+        region: '{{ aws_vpc_region }}'
+        filters:
+          "tag:vpc_name": '{{ aws_vpc_name }}'
+          attachment.vpc-id: '{{ _vpc_output.vpcs[0].vpc_id }}'
+      register: _igw_output
+
+    - name: Get VPC subnets
+      amazon.aws.ec2_vpc_subnet_info:
+        region: '{{ aws_vpc_region }}'
+        filters:
+          "tag:vpc_name": '{{ aws_vpc_name }}'
+          vpc-id: '{{ _vpc_output.vpcs[0].vpc_id }}'
+      register: _subnet_output
+
+    - name: Get VPC route tables
+      amazon.aws.ec2_vpc_route_table_info:
+        region: '{{ aws_vpc_region }}'
+        filters:
+          "tag:vpc_name": '{{ aws_vpc_name }}'
+          vpc-id: '{{ _vpc_output.vpcs[0].vpc_id }}'
+      register: _rt_output
+
+    - name: Get VPC security groups
+      amazon.aws.ec2_security_group_info:
+        region: '{{ aws_vpc_region }}'
+        filters:
+          "tag:vpc_name": '{{ aws_vpc_name }}'
+          vpc-id: '{{ _vpc_output.vpcs[0].vpc_id }}'
+      register: _sg_output
+
+...
+# vim: ft=yaml.ansible

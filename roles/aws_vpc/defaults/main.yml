@@ -1,4 +1,7 @@
 ---
+## Role variables
+aws_vpc_set_role_output: false
+
 ## VPC variables
 aws_vpc_name: ansible-built-vpc
 aws_vpc_region: us-west-2

@@ -6,6 +6,7 @@ This role creates an AWS VPC with an internet gateway, one or more subnets, and 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| aws\_vpc\_set\_role\_output | false | See the [Role Output](#role-output) section below. |
 | aws\_vpc\_name | ansible-built-vpc | Name of the VPC.  The name is also used in a tag called `vpc_name` in the rest of the VPC network components. |
 | aws\_vpc\_region | us-west-2 | The AWS region where the VPC is created |
 | aws\_vpc\_owner | \_UNSET\_ | Used in the `owner` tag for the VPC and its network resources.  If running the role from the automation controller, the `awx_user_name` variable will override this value. |
@@ -29,6 +30,53 @@ Additional tags for each resource can be applied with the relevant variables, se
 
 **NOTE:** the `vpc\_name` tag is used for Ansible task idempotency.  If another VPC is created with the same name and same tag, it could have unintended side effects, especially when using the VPC teardown feature.
 
+## Role Output
+
+The `aws\_vpc\_set\_role\_output` variable can be set to "true" in order to capture the VPC resources created by the role.  The data is captured in a variable called `_aws_vpc_role_output`, which can then be used in tasks or plays in a playbook where the aws\_vpc role is used.  The `role_output` variable is a dictionary that will contain the following keys:
+
+- vpc: data on the VPC created by the role, from the [amazon.aws.ec2\_vpc\_net\_info](https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_net_info_module.html#return-vpcs/cidr_block) module
+- igw: data on the internet gateway created by the role, from the [amazon.aws.ec2\_vpc\_igw\_info](https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_igw_info_module.html#return-internet_gateways/attachments) module
+- subnets: data on the subnets created by the role, from the [amazon.aws.ec2\_vpc\_subnet\_info](https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_igw_info_module.html#return-internet_gateways/attachments) module
+- security\_groups: data on the security groups created by the role, from the [amazon.aws.ec2\_security\_group\_info](https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_igw_info_module.html#return-internet_gateways/attachments) module
+
 ## Using the role
 
-See the [build-vpc.yml](../../playbooks/build-vpc.yml) example playbook.
+Example role:
+
+```
+---
+- name: Create and use an AWS VPC
+  hosts: localhost
+
+  tasks:
+    - name: Create VPC named "{{ aws_vpc_name }}"
+      ansible.builtin.include_role:
+        name: jce_redhat.cloud_infra.aws_vpc
+      vars:
+        aws_vpc_name: ansible-test-vpc-1
+        aws_vpc_owner: test-user
+        aws_vpc_cidr: 172.22.0.0/16
+        aws_vpc_subnets:
+          - cidr: 172.22.0.0/24
+            public: true
+            tags:
+              subnet_type: public
+          - cidr: 172.22.50.0/24
+            public: false
+            tags:
+              subnet_type: private
+        aws_vpc_set_role_output: true
+
+    - name: Get resource IDs from role output
+      ansible.builtin.set_fact:
+        my_vpc_id: '{{ _aws_vpc_role_output.vpc.vpc_id }}'
+        my_igw_id: '{{ _aws_vpc_role_output.igw.internet_gateway_id }}'
+        my_subnet_ids: '{{ _aws_vpc_role_output.subnets | map(attribute="subnet_id") }}'
+        my_secgroup_ids: '{{ _aws_vpc_role_output.security_groups | map(attribute="group_id") }}'
+
+    # do things with the IDs here
+
+...
+```
+
+See the [collection playbooks](../../playbooks/) for other examples.

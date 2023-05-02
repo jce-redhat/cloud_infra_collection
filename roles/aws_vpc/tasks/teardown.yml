@@ -1,24 +1,14 @@
 ---
-- name: Get VPC
-  amazon.aws.ec2_vpc_net_info:
-    region: '{{ aws_vpc_region }}'
-    filters:
-      "tag:vpc_name": '{{ aws_vpc_name }}'
-  register: _vpc
+- name: Get role output
+  ansible.builtin.include_tasks:
+    file: role_output.yml
 
 - name: Delete VPC block
-  when: _vpc.vpcs is truthy
+  when: _vpc_output.vpcs | length > 0
   block:
-    - name: Ensure there is only one matching VPC
-      ansible.builtin.assert:
-        that:
-          - _vpc.vpcs | length == 1
-        fail_msg: >
-          Found more than one VPC with the same name and vpc_name tag, failing for safety
-
     - name: Set VPC ID fact
       ansible.builtin.set_fact:
-        _vpc_id: '{{ _vpc.vpcs[0].vpc_id }}'
+        _vpc_id: '{{ _vpc_output.vpcs[0].vpc_id }}'
 
     - name: Check for existing instances
       amazon.aws.ec2_instance_info:
@@ -38,16 +28,8 @@
     - name: Fail if instances exist
       ansible.builtin.assert:
         that:
-          - not _instance_info.instances is truthy
+          - _instance_info.instances | length == 0
         fail_msg: Cannot delete VPC where instances exist
-
-    - name: Get VPC subnets
-      amazon.aws.ec2_vpc_subnet_info:
-        region: '{{ aws_vpc_region }}'
-        filters:
-          "tag:vpc_name": '{{ aws_vpc_name }}'
-          vpc-id: '{{ _vpc_id }}'
-      register: _subnets
 
     - name: Delete VPC subnets
       amazon.aws.ec2_vpc_subnet:
@@ -55,30 +37,14 @@
         vpc_id: '{{ _vpc_id }}'
         region: '{{ aws_vpc_region }}'
         cidr: '{{ item.cidr_block }}'
-      loop: '{{ _subnets.subnets }}'
-
-    - name: Get VPC security groups
-      amazon.aws.ec2_security_group_info:
-        region: '{{ aws_vpc_region }}'
-        filters:
-          "tag:vpc_name": '{{ aws_vpc_name }}'
-          vpc-id: '{{ _vpc_id }}'
-      register: _sg
+      loop: '{{ _subnet_output.subnets }}'
 
     - name: Delete VPC security groups
       amazon.aws.ec2_security_group:
         state: absent
         region: '{{ aws_vpc_region }}'
         group_id: '{{ item.group_id }}'
-      loop: '{{ _sg.security_groups }}'
-
-    - name: Get VPC route tables
-      amazon.aws.ec2_vpc_route_table_info:
-        region: '{{ aws_vpc_region }}'
-        filters:
-          "tag:vpc_name": '{{ aws_vpc_name }}'
-          vpc-id: '{{ _vpc_id }}'
-      register: _rt
+      loop: '{{ _sg_output.security_groups }}'
 
     - name: Delete VPC route tables
       amazon.aws.ec2_vpc_route_table:
@@ -87,7 +53,7 @@
         vpc_id: '{{ _vpc_id }}'
         route_table_id: '{{ item.route_table_id }}'
         lookup: id
-      loop: '{{ _rt.route_tables }}'
+      loop: '{{ _rt_output.route_tables }}'
 
     - name: Delete VPC internet gateway
       amazon.aws.ec2_vpc_igw:
