@@ -1,0 +1,12 @@
+---
+- name: Start creation tasks
+  ansible.builtin.include_tasks:
+    file: create.yml
+  when: not aws_vpc_teardown | bool
+
+- name: Start teardown tasks
+  ansible.builtin.include_tasks:
+    file: teardown.yml
+  when: aws_vpc_teardown | bool
+
+...

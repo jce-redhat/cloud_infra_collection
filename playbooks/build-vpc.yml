@@ -1,0 +1,13 @@
+---
+- name: Create an AWS VPC
+  hosts: localhost
+
+  tasks:
+    - name: Create VPC named "{{ aws_vpc_name }}"
+      ansible.builtin.include_role:
+        name: jce_redhat.cloud_infra.aws_vpc
+      vars:
+        aws_vpc_name: ansible-test-vpc
+        aws_vpc_owner: test-user
+
+...

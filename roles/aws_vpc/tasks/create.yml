@@ -1,0 +1,62 @@
+---
+- name: Build list of tags
+  ansible.builtin.set_fact:
+    _tags:
+      # vpc_name tag used for idempotency for VPC artifacts
+      vpc_name: '{{ aws_vpc_name }}'
+      owner: '{{ awx_user_name | default("") | bool | ternary(awx_user_name, aws_vpc_owner) }}'
+
+- name: Create VPC
+  amazon.aws.ec2_vpc_net:
+    name: '{{ aws_vpc_name }}'
+    state: present
+    region: '{{ aws_vpc_region }}'
+    cidr_block: '{{ aws_vpc_cidr }}'
+    tags: '{{ _tags | combine(aws_vpc_tags) }}'
+  register: _vpc
+
+- name: Create VPC subnets
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    cidr: '{{ item.cidr }}'
+    vpc_id: '{{ _vpc.vpc.id }}'
+    region: '{{ aws_vpc_region }}'
+    az: '{{ item.az | default(omit) }}'
+    map_public: '{{ item.public | default(false) }}'
+    tags: '{{ _tags | combine(item.tags | default({})) }}'
+  loop: '{{ aws_vpc_subnets }}'
+  register: _subnets
+
+- name: Create internet gateway
+  amazon.aws.ec2_vpc_igw:
+    state: present
+    vpc_id: '{{ _vpc.vpc.id }}'
+    region: '{{ aws_vpc_region }}'
+    tags: '{{ _tags | combine(aws_vpc_igw_tags) }}'
+  register: _igw
+
+- name: Create route table entry
+  amazon.aws.ec2_vpc_route_table:
+    region: '{{ aws_vpc_region }}'
+    vpc_id: '{{ _vpc.vpc.id }}'
+    subnets:
+      - '{{ item.subnet.id }}'
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: '{{ _igw.gateway_id }}'
+    tags: '{{ _tags }}'
+  loop: '{{ _subnets.results }}'
+
+- name: Create security groups
+  amazon.aws.ec2_security_group:
+    name: '{{ item.name }}'
+    description: '{{ item.description | default(item.name) }}'
+    region: '{{ aws_vpc_region }}'
+    vpc_id: '{{ _vpc.vpc.id }}'
+    rules: '{{ item.rules }}'
+    rules_egress: '{{ item.rules_egress | default(omit) }}'
+    tags: '{{ _tags | combine(item.tags | default({})) }}'
+  loop: '{{ aws_vpc_security_groups }}'
+
+...
+# vim: ft=yaml.ansible

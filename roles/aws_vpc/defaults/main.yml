@@ -1,0 +1,34 @@
+---
+## VPC variables
+aws_vpc_name: ansible-built-vpc
+aws_vpc_region: us-west-2
+# the awx_user_name variable from controller will always override this variable
+aws_vpc_owner: _UNSET_
+aws_vpc_cidr: '10.249.0.0/16'
+aws_vpc_tags: {}
+# will delete VPC and its components if set to true
+aws_vpc_teardown: false
+
+## Internet gateway variables
+aws_vpc_igw_tags: {}
+
+## Subnet variables
+aws_vpc_subnets:
+  # CIDR must be a subnet of aws_vpc_cidr above
+  - cidr: '10.249.0.0/24'
+    public: true
+    # additional tags can be applied per subnet
+    tags: {}
+
+## Security group variables
+aws_vpc_security_groups:
+  - name: public-ssh
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    # additional tags can be applied per security group
+    tags: {}
+
+...

@@ -1,0 +1,24 @@
+---
+namespace: jce_redhat
+name: cloud_infra
+description: Collection for creating cloud infrastructure
+version: 1.0.0
+readme: README.md
+authors:
+  - Chris Edillon <jce@redhat.com>
+license:
+  - MIT
+tags:
+  - cloud
+  - infrastructure
+  - aws
+  - redhat
+dependencies:
+  'amazon.aws': '>=2.0.0'
+repository: https://gitlab.com/jce_redhat/cloud-infra-collection
+documentation: https://gitlab.com/jce_redhat/cloud-infra-collection
+homepage: https://gitlab.com/jce_redhat/cloud-infra-collection
+issues: https://gitlab.com/jce_redhat/cloud-infra-collection/issues
+build_ignore: []
+
+...
