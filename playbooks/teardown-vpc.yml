@@ -1,6 +1,6 @@
 ---
 - name: Delete an AWS VPC and its network components
-  hosts: localhost
+  hosts: '{{ target | default("localhost") }}'
 
   tasks:
     - name: Delete VPC named "{{ aws_vpc_name }}"

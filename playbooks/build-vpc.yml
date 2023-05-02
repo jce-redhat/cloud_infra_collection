@@ -1,6 +1,6 @@
 ---
 - name: Create an AWS VPC
-  hosts: localhost
+  hosts: '{{ target | default("localhost") }}'
 
   tasks:
     - name: Create VPC named "{{ aws_vpc_name }}"
