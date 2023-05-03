@@ -22,7 +22,7 @@ This role creates a RHEL instance in AWS using the amazon.aws.ec2\_instance modu
 
 The role uses the amazon.aws.ec2\_ami\_info module to find RHEL AMIs based on a set of filters defined in the `aws_rhel_ami_filter` variable.  The default filters will search for the latest RHEL MarketPlace AMIs by name, although this variable can be overridden to search for any AMIs based on a string search of  the AMI name.  The keys of the `aws_rhel_ami_filter` variable must match the value provided in the `aws_rhel_os_version` variable.  If the `aws_rhel_image_id` variable is set, it overrides anything found with the filter mechanism.
 
-For example, if you are using the Red Hat [Cloud Access Program(https://www.redhat.com/en/technologies/cloud-computing/cloud-access), the `aws\_rhel\_ami\_filter` might look like the following:
+For example, if you are using the Red Hat [Cloud Access Program](https://www.redhat.com/en/technologies/cloud-computing/cloud-access), the `aws_rhel_ami_filter` might look like the following:
 
 ```
 aws_rhel_ami_filter:
@@ -42,9 +42,9 @@ Note that the CPU architecture should not be defined in the filter, and instead 
 
 See the following for more information on the RHEL AMIs that are available:
 
-[Red Hat Enterprise Linux Images (AMI) Available on Amazon Web Services (AWS)](https://access.redhat.com/solutions/15356) (NOTE: this page may lag behind the actual AMIs available, so filtering for the latest is preferred).
-[What are the different types of RHEL AMIs available in AWS?](https://access.redhat.com/articles/3692431)
-[How to Locate Red Hat Cloud Access Gold Images on AWS EC2](https://access.redhat.com/articles/2962171)
+- [Red Hat Enterprise Linux Images (AMI) Available on Amazon Web Services (AWS)](https://access.redhat.com/solutions/15356) (NOTE: this page may lag behind the actual AMIs available, so filtering for the latest is preferred).
+- [What are the different types of RHEL AMIs available in AWS?](https://access.redhat.com/articles/3692431)
+- [How to Locate Red Hat Cloud Access Gold Images on AWS EC2](https://access.redhat.com/articles/2962171)
 
 ## Using the role
 
