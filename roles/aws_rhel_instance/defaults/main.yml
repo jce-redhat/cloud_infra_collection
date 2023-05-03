@@ -1,0 +1,18 @@
+---
+aws_rhel_instance_name: rhel-test
+aws_rhel_instance_type: t2.micro
+aws_rhel_region: us-west-2
+aws_rhel_subnet_id: ''
+aws_rhel_key_name: ''
+aws_rhel_security_groups:
+  - default
+aws_rhel_tags: {}
+
+aws_rhel_os_version: rhel-8
+aws_rhel_ami_arch: x86_64
+aws_rhel_ami_filter:
+  rhel-7: 'RHEL-7.9_*Hourly2*'
+  rhel-8: 'RHEL-8.7.0_*Hourly2*'
+  rhel-9: 'RHEL-9.1.0_*Hourly2*'
+
+...

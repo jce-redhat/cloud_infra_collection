@@ -1,0 +1,34 @@
+---
+- name: Check aws_rhel_subnet_id variable
+  ansible.builtin.assert:
+    that:
+      - aws_rhel_subnet_id is defined
+      - aws_rhel_subnet_id | regex_search('^subnet-')
+    fail_msg: A valid VPC subnet ID must be provided
+
+- name: Get AMIs for OS version "{{ aws_rhel_os_version }}"
+  amazon.aws.ec2_ami_info:
+    owners: '{{ _redhat_owner_id }}'
+    filters:
+      name: '{{ aws_rhel_ami_filter[aws_rhel_os_version] }}'
+      architecture: '{{ aws_rhel_ami_arch }}'
+  register: _rhel_amis
+
+- name: Extract latest AMI from list
+  ansible.builtin.set_fact:
+    _latest_ami: '{{ _rhel_amis.images | sort(attribute="creation_date") | last }}'
+
+- name: Create RHEL instance from latest AMI
+  amazon.aws.ec2_instance:
+    name: '{{ aws_rhel_instance_name }}'
+    state: present
+    instance_type: '{{ aws_rhel_instance_type }}'
+    region: '{{ aws_rhel_region }}'
+    vpc_subnet_id: '{{ aws_rhel_subnet_id }}'
+    key_name: '{{ aws_rhel_key_name }}'
+    security_groups: '{{ aws_rhel_security_groups }}'
+    image_id: '{{ aws_rhel_image_id | default(_latest_ami.image_id) }}'
+    tags: '{{ aws_rhel_tags }}'
+
+...
+# vim: ft=yaml.ansible

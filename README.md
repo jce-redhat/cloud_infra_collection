@@ -7,6 +7,7 @@ This Ansible collection includes roles for managing cloud infrastructure.
 | Role | Description |
 |------|-------------|
 | [aws\_vpc](roles/aws_vpc/) | Create an AWS VPC with an internet gateway and one or more subnets and security groups |
+| [aws\_rhel\_instance](roles/aws_rhel_instance/) | Create a RHEL instance in an existing VPC subnet |
 
 ## Playbooks
 
