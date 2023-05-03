@@ -11,14 +11,6 @@
         file: role_output.yml
       when: aws_vpc_set_role_output | bool
 
-    - name: Set _aws_vpc_role_output variable
-      ansible.builtin.set_fact:
-        _aws_vpc_role_output:
-          vpc: '{{ _vpc_output.vpcs[0] }}'
-          igw: '{{ _igw_output.internet_gateways[0] }}'
-          subnets: '{{ _subnet_output.subnets }}'
-          security_groups: '{{ _sg_output.security_groups }}'
-
 - name: Start teardown tasks
   ansible.builtin.include_tasks:
     file: teardown.yml
