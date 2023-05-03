@@ -1,6 +1,6 @@
-# cloud\_infra - a collection of Ansible roles for cloud infrastructure
+# cloud\_infra - create simple cloud infrastructure
 
-This Ansible collection includes roles for managing cloud infrastructure.
+This Ansible collection includes roles for creating and destroying simple cloud infrastructure.  This collection is primarily meant for standing up quick demo environments, so the roles are not designed for complex cloud infrastructure scenarios.
 
 ## Roles
 
