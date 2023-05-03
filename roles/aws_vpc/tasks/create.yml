@@ -12,7 +12,7 @@
     state: present
     region: '{{ aws_vpc_region }}'
     cidr_block: '{{ aws_vpc_cidr }}'
-    tags: '{{ _tags | combine(aws_vpc_tags) }}'
+    tags: '{{ aws_vpc_tags | default({}) | combine(_tags) }}'
   register: _vpc
 
 - name: Create VPC subnets
@@ -23,7 +23,7 @@
     region: '{{ aws_vpc_region }}'
     az: '{{ item.az | default(omit) }}'
     map_public: '{{ item.public | default(false) }}'
-    tags: '{{ _tags | combine(item.tags | default({})) }}'
+    tags: '{{ item.tags | default({}) | combine(_tags) }}'
   loop: '{{ aws_vpc_subnets }}'
   register: _subnets
 
@@ -32,7 +32,7 @@
     state: present
     vpc_id: '{{ _vpc.vpc.id }}'
     region: '{{ aws_vpc_region }}'
-    tags: '{{ _tags | combine(aws_vpc_igw_tags) }}'
+    tags: '{{ aws_vpc_igw_tags | default({}) | combine(_tags) }}'
   register: _igw
 
 - name: Create route table entry
@@ -55,7 +55,7 @@
     vpc_id: '{{ _vpc.vpc.id }}'
     rules: '{{ item.rules }}'
     rules_egress: '{{ item.rules_egress | default(omit) }}'
-    tags: '{{ _tags | combine(item.tags | default({})) }}'
+    tags: '{{ item.tags | default({}) | combine(_tags) }}'
   loop: '{{ aws_vpc_security_groups }}'
 
 ...
